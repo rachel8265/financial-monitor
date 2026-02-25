@@ -11,12 +11,9 @@ function App() {
   const { addTransaction, loadTransactions, list, clear, setFilter, filter } = useTransactions();
 
   useEffect(() => {
-    // 1. Load existing transactions, THEN connect SignalR
-    //    (avoids race condition where SignalR delivers items before GET returns)
     fetchTransactions()
       .then((items) => {
         loadTransactions(items);
-        // 2. Only now connect to SignalR for real-time updates
         createConnection((t) => addTransaction(t));
       })
       .catch((err) => console.error("Failed to load transactions:", err));

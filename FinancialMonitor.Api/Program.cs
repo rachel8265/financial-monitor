@@ -1,37 +1,11 @@
-//var builder = WebApplication.CreateBuilder(args);
-
-//// Add services to the container.
-//// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-//////builder.Services.AddOpenApi();
-
-//var app = builder.Build();
-
-////// Configure the HTTP request pipeline.
-//////if (app.Environment.IsDevelopment())
-//////{
-//////    app.MapOpenApi();
-//////}
-
-//if (!app.Environment.IsDevelopment())
-//{
-//    app.UseHttpsRedirection();
-//}
-
-
-//app.Run();
-
-//////record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-//////{
-//////    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-//////}
 using FinancialMonitor.Api.Endpoints;
-using FinancialMonitor.Api.Services.Interfaces;
+using FinancialMonitor.Api.Extensions;
 using FinancialMonitor.Api.Hubs;
-using FinancialMonitor.Api.Services;
+using FinancialMonitor.Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Services
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("DevCors", policy =>
@@ -44,6 +18,7 @@ builder.Services.AddCors(options =>
     });
 });
 
+// SignalR with enum-as-string serialization
 builder.Services.AddSignalR()
     .AddJsonProtocol(options =>
     {
@@ -51,22 +26,22 @@ builder.Services.AddSignalR()
             new System.Text.Json.Serialization.JsonStringEnumConverter());
     });
 
+// JSON serialization for minimal API endpoints
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.Converters.Add(
         new System.Text.Json.Serialization.JsonStringEnumConverter());
 });
 
-// àí éù ìê îéîåù ìÎITransactionStore:
-builder.Services.AddSingleton<ITransactionStore, TransactionStore>();
+// Application services (ITransactionStore, etc.)
+builder.Services.AddApplicationServices();
 
 var app = builder.Build();
 
+app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseCors("DevCors");
 
-
-
-// îéôåé endpoints
+// Endpoints
 app.MapTransactionEndpoints();
 app.MapHub<MonitorHub>("/hub/monitor");
 

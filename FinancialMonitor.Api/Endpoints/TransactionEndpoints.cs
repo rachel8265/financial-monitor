@@ -1,48 +1,41 @@
 ﻿using FinancialMonitor.Api.Contracts;
 using FinancialMonitor.Api.Hubs;
+using FinancialMonitor.Api.Models;
 using FinancialMonitor.Api.Services.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 
+namespace FinancialMonitor.Api.Endpoints;
 
-using FinancialMonitor.Api.Models;
-
-
-
-
-namespace FinancialMonitor.Api.Endpoints
+public static class TransactionEndpoints
 {
-    public static class TransactionEndpoints
+    public static void MapTransactionEndpoints(this WebApplication app)
     {
-        public static void MapTransactionEndpoints(this WebApplication app)
+        app.MapPost("/api/transactions", async (
+            TransactionDto dto,
+            ITransactionStore store,
+            IHubContext<MonitorHub> hub) =>
         {
-            app.MapPost("/api/transactions",
-     async (
-         TransactionDto dto,
-         ITransactionStore store,
-         IHubContext<MonitorHub> hub) =>
-     {
-         var transaction = new Transaction
-         {
-             TransactionId = dto.TransactionId,
-             Amount = dto.Amount,
-             Currency = dto.Currency,
-             Status = Enum.TryParse<TransactionStatus>(dto.Status, true, out var status)
-                 ? status
-                 : TransactionStatus.Pending,
-             Timestamp = dto.Timestamp
-         };
-         store.Add(transaction);
-
-         await hub.Clients.All
-             .SendAsync("transactionReceived", transaction);
-
-         return Results.Ok();
-     });
-
-            app.MapGet("/api/transactions", (ITransactionStore store) =>
+            var transaction = new Transaction
             {
-                return Results.Ok(store.GetAll());
-            });
-        }
+                TransactionId = dto.TransactionId,
+                Amount = dto.Amount,
+                Currency = dto.Currency,
+                Status = Enum.TryParse<TransactionStatus>(dto.Status, true, out var status)
+                    ? status
+                    : TransactionStatus.Pending,
+                Timestamp = dto.Timestamp
+            };
+
+            store.Add(transaction);
+
+            await hub.Clients.All.SendAsync("transactionReceived", transaction);
+
+            return Results.Created($"/api/transactions/{transaction.TransactionId}", transaction);
+        });
+
+        app.MapGet("/api/transactions", (ITransactionStore store) =>
+        {
+            return Results.Ok(store.GetAll());
+        });
     }
 }

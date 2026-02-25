@@ -14,7 +14,6 @@ export async function sendTransaction(dto: Transaction) {
   }
 }
 
-/** Fetch all existing transactions from the server */
 export async function fetchTransactions(): Promise<Transaction[]> {
   const res = await fetch(`${baseUrl}/api/transactions`);
   if (!res.ok) {

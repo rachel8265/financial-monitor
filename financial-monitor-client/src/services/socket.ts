@@ -26,19 +26,15 @@ function normalizeTransaction(data: any): Transaction {
 
 let conn: signalR.HubConnection | null = null;
 
-// Mutable ref so we always call the latest React callback (StrictMode safe).
 let callbackRef: ((t: Transaction) => void) | null = null;
 
 export function createConnection(onTransaction: (t: Transaction) => void) {
-  // Always update the callback so the latest React add function is used
   callbackRef = onTransaction;
 
-  // If already connected or connecting, just reuse
   if (conn && conn.state !== signalR.HubConnectionState.Disconnected) {
     return conn;
   }
 
-  // Clean up any old disconnected connection object
   if (conn) {
     conn.stop().catch(() => {});
     conn = null;
