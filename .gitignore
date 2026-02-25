@@ -1,0 +1,24 @@
+# .NET
+bin/
+obj/
+.vs/
+*.user
+*.suo
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# IDE
+.idea/
+*.swp
+*.sln.docstates
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Env
+.env
+.env.local

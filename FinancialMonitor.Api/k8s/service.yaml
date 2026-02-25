@@ -1,0 +1,12 @@
+﻿apiVersion: v1
+kind: Service
+metadata:
+  name: financial-monitor-api
+spec:
+  type: ClusterIP
+  selector:
+    app: financial-monitor-api
+  ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP

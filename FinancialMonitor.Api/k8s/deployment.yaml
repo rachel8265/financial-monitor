@@ -1,0 +1,40 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: financial-monitor-api
+  labels:
+    app: financial-monitor-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: financial-monitor-api
+  template:
+    metadata:
+      labels:
+        app: financial-monitor-api
+    spec:
+      containers:
+        - name: api
+          image: financial-monitor-api:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "250m"
+          readinessProbe:
+            httpGet:
+              path: /api/transactions
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/transactions
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
